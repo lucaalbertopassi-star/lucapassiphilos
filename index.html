@@ -122,29 +122,110 @@ h1, h2 {
   <footer>
     &copy; 2026 Luca Passi
   </footer>
- <script>
+</script><script>
+  // ---- Background color cycle ----
   const colors = [
-    '#F5DFA0', // champagne gold
-    '#F5C842', // warm gold
-    '#F0E0B0', // light beige
-    '#E8C97A', // deeper gold
-    '#F7E8C8', // pale cream
-    '#DEB887', // burlywood
-    '#F0D090', // sandy gold
-    '#E8D5A3', // warm sand
-    '#C8A96E', // light brown
-    '#FAF0DC', // ivory gold
+    '#F5DFA0', '#F5C842', '#F0E0B0', '#E8C97A',
+    '#F7E8C8', '#DEB887', '#F0D090', '#E8D5A3',
+    '#C8A96E', '#FAF0DC',
   ];
-
   let current = 0;
-
   function cycleBackground() {
     document.body.style.background = colors[current];
     current = (current + 1) % colors.length;
   }
+  setInterval(cycleBackground, 3000);
+  cycleBackground();
 
-  setInterval(cycleBackground, 500);
-  cycleBackground(); // set immediately on load
+  // ---- Techno beat ----
+  let audioCtx = null;
+  let beatInterval = null;
+  let playing = false;
+  let step = 0;
+
+  // Kick drum
+  function kick(ctx, time) {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.frequency.setValueAtTime(150, time);
+    osc.frequency.exponentialRampToValueAtTime(0.001, time + 0.4);
+    gain.gain.setValueAtTime(1, time);
+    gain.gain.exponentialRampToValueAtTime(0.001, time + 0.4);
+    osc.start(time);
+    osc.stop(time + 0.4);
+  }
+
+  // Hi-hat
+  function hihat(ctx, time, accent) {
+    const bufferSize = ctx.sampleRate * 0.05;
+    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+    const source = ctx.createBufferSource();
+    source.buffer = buffer;
+    const gain = ctx.createGain();
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'highpass';
+    filter.frequency.value = 8000;
+    source.connect(filter);
+    filter.connect(gain);
+    gain.connect(ctx.destination);
+    gain.gain.setValueAtTime(accent ? 0.4 : 0.15, time);
+    gain.gain.exponentialRampToValueAtTime(0.001, time + 0.05);
+    source.start(time);
+    source.stop(time + 0.05);
+  }
+
+  // Synth stab
+  function stab(ctx, time, freq) {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(freq, time);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    gain.gain.setValueAtTime(0.3, time);
+    gain.gain.exponentialRampToValueAtTime(0.001, time + 0.1);
+    osc.start(time);
+    osc.stop(time + 0.1);
+  }
+
+  const bpm = 138;
+  const stepTime = 60 / bpm / 2; // 16th notes
+
+  // 16-step patterns
+  const kickPattern  = [1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0];
+  const hihatPattern = [1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1];
+  const hihatAccent  = [1,0,0,0, 0,0,0,0, 1,0,0,0, 0,0,0,0];
+  const stabPattern  = [0,0,0,0, 1,0,0,0, 0,0,0,0, 1,0,0,1];
+  const stabFreqs    = [220, 165, 196];
+
+  function scheduleBeat() {
+    const now = audioCtx.currentTime;
+    if (kickPattern[step])  kick(audioCtx, now);
+    if (hihatPattern[step]) hihat(audioCtx, now, hihatAccent[step]);
+    if (stabPattern[step])  stab(audioCtx, now, stabFreqs[step % stabFreqs.length]);
+    step = (step + 1) % 16;
+  }
+
+  function toggleBeat() {
+    const btn = document.getElementById('beat-btn');
+    if (!playing) {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      step = 0;
+      beatInterval = setInterval(scheduleBeat, stepTime * 1000);
+      playing = true;
+      btn.textContent = '⏹ Stop Beat';
+    } else {
+      clearInterval(beatInterval);
+      audioCtx.close();
+      playing = false;
+      btn.textContent = '▶ Play Beat';
+    }
+  }
 </script>
+
 </body>
 </html>
