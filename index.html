@@ -147,7 +147,7 @@ h1, h2 {
     document.body.style.background = colors[current];
     current = (current + 1) % colors.length;
   }
-  setInterval(cycleBackground, 500);
+  setInterval(cycleBackground, 3000);
   cycleBackground();
 
   // ---- Techno beat ----
@@ -238,6 +238,26 @@ h1, h2 {
       btn.textContent = '▶ Play Beat';
     }
   }
+  <button onclick="fastenColors()" style="
+  margin-top: 1rem;
+  margin-left: 0.5rem;
+  font-family: 'Times New Roman', serif;
+  background: none;
+  border: 1px solid #8B4513;
+  color: #8B4513;
+  padding: 4px 10px;
+  cursor: pointer;
+  font-size: 0.85rem;
+">⚡ Fasten Color Change</button>
+
+ // (remove this line — colorInterval above handles it now)
+
+function fastenColors() {
+  clearInterval(colorInterval);
+  colorInterval = setInterval(cycleBackground, 500);
+}
+
+  
 </script>
 
 </body>
