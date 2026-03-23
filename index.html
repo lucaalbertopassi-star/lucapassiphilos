@@ -122,18 +122,29 @@ h1, h2 {
   <footer>
     &copy; 2026 Luca Passi
   </footer>
-  <script>
-    function toggleAbstract() {
-      var abs = document.getElementById('abstract-pna');
-      var btn = document.querySelector('.abstract-toggle');
-      if (abs.style.display === 'block') {
-        abs.style.display = 'none';
-        btn.textContent = 'Abstract ▸';
-      } else {
-        abs.style.display = 'block';
-        btn.textContent = 'Abstract ▾';
-      }
-    }
-  </script>
+ <script>
+  const colors = [
+    '#F5DFA0', // champagne gold
+    '#F5C842', // warm gold
+    '#F0E0B0', // light beige
+    '#E8C97A', // deeper gold
+    '#F7E8C8', // pale cream
+    '#DEB887', // burlywood
+    '#F0D090', // sandy gold
+    '#E8D5A3', // warm sand
+    '#C8A96E', // light brown
+    '#FAF0DC', // ivory gold
+  ];
+
+  let current = 0;
+
+  function cycleBackground() {
+    document.body.style.background = colors[current];
+    current = (current + 1) % colors.length;
+  }
+
+  setInterval(cycleBackground, 5000);
+  cycleBackground(); // set immediately on load
+</script>
 </body>
 </html>
